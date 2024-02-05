@@ -1,3 +1,18 @@
-from django.contrib import admin
+from django.contrib.admin import register, ModelAdmin
+from .models import Client, Message, Mailing
+from .forms import ClientForm
 
-# Register your models here.
+
+@register(Client)
+class ClientAdmin(ModelAdmin):
+    form = ClientForm
+
+
+@register(Message)
+class MessageAdmin(ModelAdmin):
+    pass
+
+
+@register(Mailing)
+class MailingAdmin(ModelAdmin):
+    pass
