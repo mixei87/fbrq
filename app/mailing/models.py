@@ -1,47 +1,47 @@
 from django.db.models import Model, DateTimeField, TextField, ManyToManyField, PositiveSmallIntegerField, ForeignKey, \
-    CASCADE, UniqueConstraint, CharField, SlugField
+    CASCADE, CharField, SlugField
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from pytz import all_timezones
 
 
 class PhoneCode(Model):
-    code = PositiveSmallIntegerField(primary_key=True, validators=[MinValueValidator(900), MaxValueValidator(999)])
+    phone_code = PositiveSmallIntegerField(primary_key=True,
+                                           validators=[MinValueValidator(900), MaxValueValidator(999)],
+                                           verbose_name="Код телефона")
 
     def __str__(self):
-        return str(self.code)
+        return str(self.phone_code)
+
+    class Meta:
+        verbose_name = "Код телефона"
+        verbose_name_plural = "Коды телефонов"
 
 
 class Tag(Model):
-    tag = SlugField(primary_key=True)
+    tag = SlugField(primary_key=True, verbose_name="Тэг клиента")
 
     def __str__(self):
         return str(self.tag)
 
+    class Meta:
+        verbose_name = "Тэг клиента"
+        verbose_name_plural = "Тэги клиентов"
+
 
 class Mailing(Model):
-    start_time = DateTimeField("Дата и время запуска рассылки")
-    text_msg = TextField("Текст сообщения для доставки клиенту")
-    filter_phone_code = ManyToManyField(PhoneCode, through='PhoneCodeMailing', through_fields=('mailing', 'phone_code'),
-                                        verbose_name="Фильтр клиентов по коду мобильного оператора")
-    filter_tag = ManyToManyField(Tag, through='TagMailing', through_fields=('mailing', 'tag'),
-                                 verbose_name="Фильтр клиентов по тегу")
-    finish_time = DateTimeField("Дата и время окончания рассылки")
+    start_time = DateTimeField(verbose_name="Дата и время запуска рассылки")
+    finish_time = DateTimeField(verbose_name="Дата и время окончания рассылки")
+    text_msg = TextField(verbose_name="Текст сообщения для доставки клиенту")
+    filter_phone_code = ManyToManyField(PhoneCode, verbose_name="Фильтр клиентов по коду мобильного оператора",
+                                        blank=True)
+    filter_tag = ManyToManyField(Tag, verbose_name="Фильтр клиентов по тегу", blank=True)
 
-
-class PhoneCodeMailing(Model):
-    mailing = ForeignKey(Mailing, on_delete=CASCADE)
-    phone_code = ForeignKey(PhoneCode, on_delete=CASCADE)
+    def __str__(self):
+        return f'Рассылка {self.pk}: "{self.text_msg[:50]}"'
 
     class Meta:
-        constraints = [UniqueConstraint(fields=['phone_code', 'mailing'], name='unique_phone_code_mailing')]
-
-
-class TagMailing(Model):
-    mailing = ForeignKey(Mailing, on_delete=CASCADE)
-    tag = ForeignKey(Tag, on_delete=CASCADE)
-
-    class Meta:
-        constraints = [UniqueConstraint(fields=['tag', 'mailing'], name='unique_tag_mailing')]
+        verbose_name = "Рассылка"
+        verbose_name_plural = "Рассылки"
 
 
 class Client(Model):
@@ -50,28 +50,36 @@ class Client(Model):
     phone = CharField(primary_key=True, max_length=11,
                       validators=[RegexValidator(
                           regex=r'^79\d{9}$', message="Номер телефона клиента в формате 79XXXXXXXXX"
-                                                      "(X - цифра от 0 до 9)")])
-    phone_code = ForeignKey(PhoneCode, on_delete=CASCADE)
-    tag = ForeignKey(Tag, on_delete=CASCADE, blank=True, null=True)
-    timezone = CharField(max_length=32, choices=TIMEZONES, default='UTC')
+                                                      "(X - цифра от 0 до 9)")], verbose_name="Номер телефона")
+    phone_code = ForeignKey(PhoneCode, on_delete=CASCADE, verbose_name="Код телефона")
+    tag = ForeignKey(Tag, on_delete=CASCADE, blank=True, null=True, verbose_name="Тэг клиента")
+    timezone = CharField(max_length=32, choices=TIMEZONES, default='UTC', verbose_name="Часовой пояс")
 
     def save(self, *args, **kwargs):
         phone_code = int(self.phone[1:4])
-        self.phone_code, _ = PhoneCode.objects.get_or_create(code=phone_code)
+        self.phone_code, _ = PhoneCode.objects.get_or_create(phone_code=phone_code)
         super().save(*args, **kwargs)
 
     def __str__(self):
         return str(self.phone)
+
+    class Meta:
+        verbose_name = "Клиент"
+        verbose_name_plural = "Клиенты"
 
 
 class Message(Model):
     STATUSES = ['SUCCESS', 'IN_PROGRESS', 'FAIL']
     STATUSES = tuple(zip(STATUSES, STATUSES))
 
-    datetime_sent = DateTimeField(auto_now_add=True)
-    status = CharField(max_length=11, choices=STATUSES, default='IN_PROGRESS')
-    mailing = ForeignKey(Mailing, on_delete=CASCADE)
-    client = ForeignKey(Client, on_delete=CASCADE)
+    datetime_sent = DateTimeField(auto_now_add=True, verbose_name="Дата и время отправки")
+    status = CharField(max_length=11, choices=STATUSES, default='IN_PROGRESS', verbose_name="Статус сообщения")
+    mailing = ForeignKey(Mailing, on_delete=CASCADE, verbose_name="Рассылка")
+    client = ForeignKey(Client, on_delete=CASCADE, verbose_name="Клиент")
 
     def __str__(self):
         return str(self.pk)
+
+    class Meta:
+        verbose_name = "Сообщение"
+        verbose_name_plural = "Сообщения"
