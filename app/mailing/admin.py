@@ -1,6 +1,6 @@
 from django.contrib.admin import register, ModelAdmin
 from .models import Client, Message, Mailing
-from .forms import ClientForm
+from .forms import ClientForm, MailingForm
 
 
 @register(Client)
@@ -12,7 +12,10 @@ class ClientAdmin(ModelAdmin):
 class MessageAdmin(ModelAdmin):
     pass
 
+    def has_add_permission(self, request):
+        return False
+
 
 @register(Mailing)
 class MailingAdmin(ModelAdmin):
-    pass
+    form = MailingForm
