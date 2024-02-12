@@ -1,0 +1,245 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /mailing/mailings/:
+    get:
+      operationId: mailing_mailings_list
+      tags:
+      - mailing
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Mailing'
+          description: ''
+    post:
+      operationId: mailing_mailings_create
+      tags:
+      - mailing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Mailing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Mailing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Mailing'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mailing'
+          description: ''
+  /mailing/mailings/{id}/:
+    get:
+      operationId: mailing_mailings_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Рассылка.
+        required: true
+      tags:
+      - mailing
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mailing'
+          description: ''
+    put:
+      operationId: mailing_mailings_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Рассылка.
+        required: true
+      tags:
+      - mailing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Mailing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Mailing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Mailing'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mailing'
+          description: ''
+    patch:
+      operationId: mailing_mailings_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Рассылка.
+        required: true
+      tags:
+      - mailing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMailing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMailing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMailing'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mailing'
+          description: ''
+    delete:
+      operationId: mailing_mailings_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Рассылка.
+        required: true
+      tags:
+      - mailing
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    Mailing:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        phone_codes:
+          type: array
+          items:
+            type: integer
+            maximum: 999
+            minimum: 900
+            title: Код телефона
+        start_time:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Дата и время запуска рассылки
+        finish_time:
+          type: string
+          format: date-time
+          title: Дата и время окончания рассылки
+        text_msg:
+          type: string
+          title: Текст сообщения для доставки клиенту
+        filter_phone_code:
+          type: array
+          items:
+            type: integer
+            maximum: 999
+            minimum: 900
+            title: Фильтр клиентов по коду мобильного оператора
+          title: Фильтр клиентов по коду мобильного оператора
+        filter_tag:
+          type: array
+          items:
+            type: string
+            title: Фильтр клиентов по тегу
+          title: Фильтр клиентов по тегу
+      required:
+      - finish_time
+      - id
+      - start_time
+      - text_msg
+    PatchedMailing:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        phone_codes:
+          type: array
+          items:
+            type: integer
+            maximum: 999
+            minimum: 900
+            title: Код телефона
+        start_time:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Дата и время запуска рассылки
+        finish_time:
+          type: string
+          format: date-time
+          title: Дата и время окончания рассылки
+        text_msg:
+          type: string
+          title: Текст сообщения для доставки клиенту
+        filter_phone_code:
+          type: array
+          items:
+            type: integer
+            maximum: 999
+            minimum: 900
+            title: Фильтр клиентов по коду мобильного оператора
+          title: Фильтр клиентов по коду мобильного оператора
+        filter_tag:
+          type: array
+          items:
+            type: string
+            title: Фильтр клиентов по тегу
+          title: Фильтр клиентов по тегу
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
