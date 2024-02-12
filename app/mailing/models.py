@@ -42,6 +42,7 @@ class Mailing(Model):
     class Meta:
         verbose_name = "Рассылка"
         verbose_name_plural = "Рассылки"
+        unique_together = ('start_time', 'finish_time', 'text_msg')
 
 
 class Client(Model):
