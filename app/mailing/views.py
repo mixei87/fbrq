@@ -1,4 +1,3 @@
-from dal_select2.widgets import ModelSelect2Multiple
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Model
 from django.http import HttpResponseForbidden, JsonResponse, Http404
@@ -6,8 +5,8 @@ from dal import autocomplete
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
-from .models import Tag, PhoneCode, Mailing
-from .serializers import MailingSerializer
+from .models import Tag, PhoneCode, Mailing, Client
+from .serializers import MailingSerializer, ClientSerializer
 
 
 class Autocomplete(autocomplete.Select2QuerySetView):
@@ -54,4 +53,10 @@ class Autocomplete(autocomplete.Select2QuerySetView):
 class MailingViewSet(ModelViewSet):
     serializer_class = MailingSerializer
     queryset = Mailing.objects.all()
+    permission_classes = [IsAuthenticated]
+
+
+class ClientViewSet(ModelViewSet):
+    serializer_class = ClientSerializer
+    queryset = Client.objects.all()
     permission_classes = [IsAuthenticated]
