@@ -2,6 +2,7 @@ from django.db.models import Model, DateTimeField, TextField, ManyToManyField, P
     CharField, SlugField, RESTRICT, SET_NULL
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from pytz import all_timezones
+from django.utils.timezone import now
 
 
 class PhoneCode(Model):
@@ -61,6 +62,10 @@ class Mailing(Model):
                                         blank=True)
     filter_tag = ManyToManyField(Tag, verbose_name="Фильтр клиентов по тегу", blank=True)
 
+    @property
+    def can_send(self) -> bool:
+        return self.finish_time < now()
+
     def __str__(self):
         return f'Рассылка {self.pk}: "{self.text_msg[:50]}"'
 
@@ -71,13 +76,19 @@ class Mailing(Model):
 
 
 class Message(Model):
-    STATUSES = ['SUCCESS', 'IN_PROGRESS', 'FAIL']
-    STATUSES = tuple(zip(STATUSES, STATUSES))
+    statuses_dict = {'SUCCESS': 'succeeded', 'IN_PROGRESS': 'created', 'FAIL': 'failed'}
+    statuses = statuses_dict.keys()
+    statuses = tuple(zip(statuses, statuses))
 
     datetime_sent = DateTimeField(auto_now_add=True, verbose_name="Дата и время отправки")
-    status = CharField(max_length=11, choices=STATUSES, default='IN_PROGRESS', verbose_name="Статус сообщения")
+    status = CharField(max_length=11, choices=statuses, default='IN_PROGRESS', verbose_name="Статус сообщения")
     mailing = ForeignKey(Mailing, on_delete=RESTRICT, verbose_name="Рассылка")
     client = ForeignKey(Client, on_delete=RESTRICT, verbose_name="Клиент")
+
+    @property
+    def info_message(self) -> str:
+        return (f"Message {self.statuses_dict[self.status]}: id={self.pk}, mailing_id={self.mailing}, "
+                f"client_id={self.client_id}, status={self.status}")
 
     def __str__(self):
         return str(self.pk)
